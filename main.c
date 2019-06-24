@@ -115,7 +115,6 @@ int main(void) {
 
     setlocale(LC_ALL, "portuguese");
     system("title Clínica Viva Bem");
-    srand(time(NULL));
 
     if (access("dados", F_OK) == -1) system("mkdir dados");
 
