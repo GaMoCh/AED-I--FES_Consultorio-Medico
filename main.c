@@ -15,10 +15,13 @@
 #define DADOS_MEDICOS FOLDER"medicos"EXTENSION
 #define DADOS_PACIENTES FOLDER"pacientes"EXTENSION
 
+#define QUANTIDADE_LAUDOS 10
+
 #define TAMANHO_DATA 10
 #define TAMANHO_ENDERECO 50
 #define TAMANHO_ESPECIALIDADE 14
 #define TAMANHO_HORARIO 5
+#define TAMANHO_LAUDO 25
 #define TAMANHO_NOME 50
 #define TAMANHO_TELEFONE 13
 
@@ -55,12 +58,14 @@ typedef struct tipo_consulta {
     char horario[TAMANHO_HORARIO + 1];
     unsigned int codigo_do_medico;
     unsigned int codigo_do_paciente;
+    char laudo[TAMANHO_LAUDO + 1];
     bool cancelada;
     Momento momento;
 } Consulta;
 
 void menu_principal(void);
 void menu_relatorios(void);
+void menu_laudos(void);
 void pausar(void);
 
 void mostrar_mensagem_de_informacao_invalida(void);
@@ -74,6 +79,9 @@ void exibir_relatorios(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_p
 void exibir_consultas_pela_data(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes);
 void exibir_consultas_realizadas_pelo_paciente(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes);
 void exibir_consultas_do_medico(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes);
+void exibir_laudos_medicos(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes);
+void exibir_laudos_pelo_medico(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes, const char LAUDOS[3][QUANTIDADE_LAUDOS][TAMANHO_LAUDO + 1]);
+void exibir_laudos_pelo_paciente(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes, const char LAUDOS[3][QUANTIDADE_LAUDOS][TAMANHO_LAUDO + 1]);
 
 Medico receber_medico_pelo_codigo(FILE *dados_medicos, unsigned int codigo);
 Medico receber_medico_pelo_nome(FILE *dados_medicos, char *nome);
@@ -107,6 +115,7 @@ int main(void) {
 
     setlocale(LC_ALL, "portuguese");
     system("title Clínica Viva Bem");
+    srand(time(NULL));
 
     if (access("dados", F_OK) == -1) system("mkdir dados");
 
@@ -156,6 +165,9 @@ int main(void) {
                 exibir_consultas_do_medico(dados_consultas, dados_medicos, dados_pacientes);
                 getch();
                 break;
+            case 7:
+                exibir_laudos_medicos(dados_consultas, dados_medicos, dados_pacientes);
+                break;
             default:
                 printf("\n\nOpção inválida.");
                 pausar();
@@ -180,12 +192,19 @@ void menu_principal(void) {
     printf("4 - Cancelar consulta\n");
     printf("5 - Exibir relatórios\n");
     printf("6 - Exibir consultas de um médico\n");
+    printf("7 - Exibir laudos médicos\n");
 }
 
 void menu_relatorios(void) {
     printf("0 - Voltar\n");
     printf("1 - Consultas de uma determinada data\n");
     printf("2 - Consultas realizadas de um determinado paciente\n");
+}
+
+void menu_laudos(void) {
+    printf("0 - Voltar\n");
+    printf("1 - Laudos de um determinado médico\n");
+    printf("2 - Laudos de um determinado paciente\n");
 }
 
 void pausar(void) {
@@ -354,7 +373,7 @@ void cadastrar_paciente(FILE *dados_pacientes) {
 }
 
 void cadastrar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes) {
-    Consulta consulta = {0, "", "", 0, 0, false, {0}};
+    Consulta consulta = {0, "", "", 0, 0, "", false, {0}};
     Medico medico;
     Paciente paciente;
 
@@ -528,9 +547,10 @@ void cancelar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_p
 
                     if (consulta.cancelada) printf("\nConsulta com esse código já foi cancelada.");
                     else if (verificar_se_momento_ja_passou(consulta.momento)) printf("\nConsulta com esse código já foi realizada.");
-                    else printf("\nConsulta cancelada com sucesso.");
-
-                    consulta.cancelada = true;
+                    else {
+                        consulta.cancelada = true;
+                        printf("\nConsulta cancelada com sucesso.");
+                    }
 
                     fseek(dados_consultas, sizeof(consulta) * posicao, SEEK_SET);
                     fwrite(&consulta, sizeof(consulta), 1, dados_consultas);
@@ -745,6 +765,193 @@ void exibir_consultas_do_medico(FILE *dados_consultas, FILE *dados_medicos, FILE
     }
 
     if (!existe_consulta) printf("\nNenhuma consulta.");
+}
+
+void exibir_laudos_medicos(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes) {
+    Consulta consulta;
+    Medico medico;
+
+    const char LAUDOS[3][QUANTIDADE_LAUDOS][TAMANHO_LAUDO + 1] = {
+        {
+            "AAAAAAAAAAAAAAAAAAAA", "BBBBBBBBBBBBBBBBBBBB", "CCCCCCCCCCCCCCCCCCCC", "DDDDDDDDDDDDDDDDDDDD", "EEEEEEEEEEEEEEEEEEEE", "FFFFFFFFFFFFFFFFFFFF", "GGGGGGGGGGGGGGGGGGGG", "HHHHHHHHHHHHHHHHHHHH", "IIIIIIIIIIIIIIIIIIII", "JJJJJJJJJJJJJJJJJJJJ",
+        },
+        {
+            "KKKKKKKKKKKKKKKKKKKK", "LLLLLLLLLLLLLLLLLLLL", "MMMMMMMMMMMMMMMMMMMM", "NNNNNNNNNNNNNNNNNNNN", "OOOOOOOOOOOOOOOOOOOO", "PPPPPPPPPPPPPPPPPPPP", "QQQQQQQQQQQQQQQQQQQQ", "RRRRRRRRRRRRRRRRRRRR", "SSSSSSSSSSSSSSSSSSSS", "TTTTTTTTTTTTTTTTTTTT",
+        },
+        {
+            "UUUUUUUUUUUUUUUUUUUU", "VVVVVVVVVVVVVVVVVVVV", "WWWWWWWWWWWWWWWWWWWW", "XXXXXXXXXXXXXXXXXXXX", "YYYYYYYYYYYYYYYYYYYY", "ZZZZZZZZZZZZZZZZZZZZ", "@@@@@@@@@@@@@@@@@@@@", "####################", "$$$$$$$$$$$$$$$$$$$$", "&&&&&&&&&&&&&&&&&&&&",
+        }
+    };
+
+    char opcao = '0';
+    unsigned int posicao = 0;
+
+    fseek(dados_consultas, 0, SEEK_SET);
+    fread(&consulta, sizeof(consulta), 1, dados_consultas);
+
+    while (!feof(dados_consultas)) {
+        medico = receber_medico_pelo_codigo(dados_medicos, consulta.codigo_do_medico);
+
+        if (!consulta.cancelada && verificar_se_momento_ja_passou(consulta.momento))
+            if (!strlen(consulta.laudo)) {
+                if (strcmp(medico.especialidade, "Cardiologia") == 0)
+                    strcpy(consulta.laudo, LAUDOS[0][rand() % QUANTIDADE_LAUDOS]);
+                else if (strcmp(medico.especialidade, "Dermatologia") == 0)
+                    strcpy(consulta.laudo, LAUDOS[1][rand() % QUANTIDADE_LAUDOS]);
+                else if (strcmp(medico.especialidade, "Clínica médica") == 0)
+                    strcpy(consulta.laudo, LAUDOS[2][rand() % QUANTIDADE_LAUDOS]);
+
+                fseek(dados_consultas, sizeof(consulta) * posicao, SEEK_SET);
+                fwrite(&consulta, sizeof(consulta), 1, dados_consultas);
+                fflush(dados_consultas);
+            }
+
+        posicao++;
+        fread(&consulta, sizeof(consulta), 1, dados_consultas);
+    }
+
+    do {
+        system("cls");
+        printf("Exibição de laudos\n\n");
+        menu_laudos();
+
+        printf("\nOpção: ");
+        opcao = getche();
+
+        switch(opcao - '0') {
+            case 0:
+                break;
+            case 1:
+                exibir_laudos_pelo_medico(dados_consultas, dados_medicos, dados_pacientes, LAUDOS);
+                break;
+            case 2:
+                exibir_laudos_pelo_paciente(dados_consultas, dados_medicos, dados_pacientes, LAUDOS);
+                break;
+            default:
+                printf("\n\nOpção inválida.");
+                pausar();
+                break;
+        }
+
+        if (opcao == '0') break;
+
+    } while (true);
+}
+
+void exibir_laudos_pelo_medico(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes, const char LAUDOS[3][QUANTIDADE_LAUDOS][TAMANHO_LAUDO + 1]) {
+    Consulta consulta;
+    Medico medico;
+    Paciente paciente;
+
+    char nome[TAMANHO_NOME + 1] = "";
+    bool existe_consulta = false;
+
+    while (true) {
+        system("cls");
+        printf("Exibição de laudos de um determinado médico\n\n");
+
+        !strlen(nome)
+            ? printf(MENSAGEM_NOME)
+            : printf(MENSAGEM_NOME"%s\n", nome);
+        if (!strlen(nome)) gets(nome);
+        if (!strlen(nome)) {
+            mostrar_mensagem_de_informacao_nao_informada();
+            continue;
+        }
+        if (!verificar_existencia_do_medico(dados_medicos, nome)) {
+            printf("\nNão existe um médico com o nome informado.");
+            pausar();
+            strcpy(nome, "");
+            continue;
+        }
+
+        break;
+    }
+
+    fseek(dados_consultas, 0, SEEK_SET);
+    fread(&consulta, sizeof(consulta), 1, dados_consultas);
+
+    while (!feof(dados_consultas)) {
+        medico = receber_medico_pelo_codigo(dados_medicos, consulta.codigo_do_medico);
+        paciente = receber_paciente_pelo_codigo(dados_pacientes, consulta.codigo_do_paciente);
+
+        if (!consulta.cancelada)
+            if (strcmpi(medico.nome, nome) == 0 && verificar_se_momento_ja_passou(consulta.momento)) {
+                existe_consulta = true;
+
+                printf("\nCódigo: %d", consulta.codigo);
+                printf("\nData: %s", consulta.data);
+                printf("\nHorário: %s", consulta.horario);
+                printf("\nEspecialidade: %s", medico.especialidade);
+                printf("\nPaciente: %s", paciente.nome);
+                printf("\nLaudo: %s", consulta.laudo);
+                printf("\n");
+        }
+
+        fread(&consulta, sizeof(consulta), 1, dados_consultas);
+    }
+
+    if (!existe_consulta) printf("\nNenhuma consulta.");
+
+    getch();
+}
+
+void exibir_laudos_pelo_paciente(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes, const char LAUDOS[3][QUANTIDADE_LAUDOS][TAMANHO_LAUDO + 1]) {
+    Consulta consulta;
+    Medico medico;
+    Paciente paciente;
+
+    char nome[TAMANHO_NOME + 1] = "";
+    bool existe_consulta = false;
+
+    while (true) {
+        system("cls");
+        printf("Exibição de laudos de um determinado paciente\n\n");
+
+        !strlen(nome)
+            ? printf(MENSAGEM_NOME)
+            : printf(MENSAGEM_NOME"%s\n", nome);
+        if (!strlen(nome)) gets(nome);
+        if (!strlen(nome)) {
+            mostrar_mensagem_de_informacao_nao_informada();
+            continue;
+        }
+        if (!verificar_existencia_do_paciente(dados_pacientes, nome)) {
+            printf("\nNão existe um paciente com o nome informado.");
+            pausar();
+            strcpy(nome, "");
+            continue;
+        }
+
+        break;
+    }
+
+    fseek(dados_consultas, 0, SEEK_SET);
+    fread(&consulta, sizeof(consulta), 1, dados_consultas);
+
+    while (!feof(dados_consultas)) {
+        medico = receber_medico_pelo_codigo(dados_medicos, consulta.codigo_do_medico);
+        paciente = receber_paciente_pelo_codigo(dados_pacientes, consulta.codigo_do_paciente);
+
+        if (!consulta.cancelada)
+            if (strcmpi(paciente.nome, nome) == 0 && verificar_se_momento_ja_passou(consulta.momento)) {
+                existe_consulta = true;
+
+                printf("\nCódigo: %d", consulta.codigo);
+                printf("\nData: %s", consulta.data);
+                printf("\nHorário: %s", consulta.horario);
+                printf("\nEspecialidade: %s", medico.especialidade);
+                printf("\nMédico: %s", medico.nome);
+                printf("\nLaudo: %s", consulta.laudo);
+                printf("\n");
+        }
+
+        fread(&consulta, sizeof(consulta), 1, dados_consultas);
+    }
+
+    if (!existe_consulta) printf("\nNenhuma consulta.");
+
+    getch();
 }
 
 Medico receber_medico_pelo_codigo(FILE *dados_medicos, unsigned int codigo) {
