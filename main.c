@@ -114,7 +114,7 @@ int main(void) {
     FILE *dados_consultas;
 
     setlocale(LC_ALL, "portuguese");
-    system("title Clínica Viva Bem");
+    system("title Clínica Viva Bem - Painel");
 
     if (access("dados", F_OK) == -1) system("mkdir dados");
 
@@ -132,7 +132,7 @@ int main(void) {
         printf("Clínica Viva Bem\n\n");
         menu_principal();
 
-        printf("\nOpção: ");
+        printf("\nSelecione a opção: ");
         opcao = getche();
 
         switch(opcao - '0') {
@@ -168,7 +168,7 @@ int main(void) {
                 exibir_laudos_medicos(dados_consultas, dados_medicos, dados_pacientes);
                 break;
             default:
-                printf("\n\nOpção inválida.");
+                printf("\n\n[Erro: 1] Opção selecionada não encontrada.");
                 pausar();
                 break;
         }
@@ -184,14 +184,14 @@ int main(void) {
 }
 
 void menu_principal(void) {
-    printf("0 - Sair\n");
-    printf("1 - Cadastrar médico\n");
-    printf("2 - Cadastrar paciente\n");
-    printf("3 - Cadastrar consulta\n");
-    printf("4 - Cancelar consulta\n");
-    printf("5 - Exibir relatórios\n");
-    printf("6 - Exibir consultas de um médico\n");
     printf("7 - Exibir laudos médicos\n");
+    printf("6 - Exibir consultas de um médico\n");
+    printf("5 - Exibir relatórios\n");
+    printf("4 - Cancelar consulta\n");
+    printf("3 - Cadastrar consulta\n");
+    printf("2 - Cadastrar paciente\n");
+    printf("1 - Cadastrar médico\n");
+    printf("0 - Sair\n");
 }
 
 void menu_relatorios(void) {
@@ -208,17 +208,17 @@ void menu_laudos(void) {
 }
 
 void pausar(void) {
-    printf("\nPrecione qualquer tecla para inserir novamente...");
+    printf("\nPressione qualquer tecla para prosseguir...");
     getch();
 }
 
 void mostrar_mensagem_de_informacao_invalida(void) {
-    printf("\nInformação inválida.");
+    printf("\n[Erro: #2]: Informação inválida.");
     pausar();
 }
 
 void mostrar_mensagem_de_informacao_nao_informada(void) {
-    printf("\nInformação não foi informada.");
+    printf("\n[Erro: #3]: A informação não foi informada.");
     pausar();
 }
 
@@ -238,7 +238,7 @@ void cadastrar_medico(FILE *dados_medicos) {
             continue;
         }
         if (verificar_existencia_do_medico(dados_medicos, medico.nome)) {
-            printf("\nEsse nome já foi cadastrado para algum médico.");
+            printf("\n[Erro: #4]: Esse nome já foi cadastrado para algum médico.");
             pausar();
             strcpy(medico.nome, "");
             continue;
@@ -313,7 +313,7 @@ void cadastrar_paciente(FILE *dados_pacientes) {
             continue;
         }
         if (verificar_existencia_do_paciente(dados_pacientes, paciente.nome)) {
-            printf("\nEsse nome já foi cadastrado para algum paciente.");
+            printf("\n[Erro: #5]: Esse nome já foi cadastrado para algum paciente.");
             pausar();
             strcpy(paciente.nome, "");
             continue;
@@ -443,14 +443,14 @@ void cadastrar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_
             medico = receber_medico_pelo_nome(dados_medicos, nome_do_medico);
             consulta.codigo_do_medico = medico.codigo;
         } else {
-            printf("\nNão foi encontrado um médico com esse nome.");
+            printf("\n[Erro: #6]: Não foi encontrado um médico com esse nome.");
             pausar();
             strcpy(nome_do_medico, "");
             continue;
         }
 
         if (receber_quantidades_de_consultas_do_medico(dados_consultas, consulta.data, medico.codigo) >= 2) {
-            printf("\nO médico já possui 2 consultas agendadas na data informada.");
+            printf("\n[Erro: #7]: O médico já possui 2 consultas agendadas na data informada.");
             pausar();
             strcpy(consulta.data, "");
             strcpy(consulta.horario, "");
@@ -470,7 +470,7 @@ void cadastrar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_
             paciente = receber_paciente_pelo_nome(dados_pacientes, nome_do_paciente);
             consulta.codigo_do_paciente = paciente.codigo;
         } else {
-            printf("\nNão foi encontrado um paciente com esse nome.");
+            printf("\n[Erro: #8]: Não foi encontrado um paciente com esse nome.");
             pausar();
             strcpy(nome_do_paciente, "");
             continue;
@@ -524,7 +524,7 @@ void cancelar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_p
             fread(&consulta, sizeof(consulta), 1, dados_consultas);
         }
 
-        if (!existe_consulta_agendada) printf("Não existe consulta agendada.");
+        if (!existe_consulta_agendada) printf("[Erro: #11]: Não existe consulta agendada.");
         else {
             printf("\nCancelar consulta com o código: ");
             gets(codigo);
@@ -545,7 +545,7 @@ void cancelar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_p
                 if (consulta.codigo == atoi(codigo)) {
                     existe_consulta_com_o_codigo = true;
 
-                    if (consulta.cancelada) printf("\nConsulta com esse código já foi cancelada.");
+                    if (consulta.cancelada) printf("\n[Erro: #9]: Uma consulta com esse código já foi cancelada.");
                     else if (verificar_se_momento_ja_passou(consulta.momento)) printf("\nConsulta com esse código já foi realizada.");
                     else {
                         consulta.cancelada = true;
@@ -561,7 +561,7 @@ void cancelar_consulta(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_p
                 fread(&consulta, sizeof(consulta), 1, dados_consultas);
             }
 
-            if (!existe_consulta_com_o_codigo) printf("\nNão existe uma consulta com esse código.");
+            if (!existe_consulta_com_o_codigo) printf("\n[Erro: #10]: Não existe uma consulta com esse código.");
         }
 
         break;
@@ -589,7 +589,7 @@ void exibir_relatorios(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_p
                 exibir_consultas_realizadas_pelo_paciente(dados_consultas, dados_medicos, dados_pacientes);
                 break;
             default:
-                printf("\n\nOpção inválida.");
+                printf("\n\n[Erro: #2]: Informação inválida.");
                 pausar();
                 break;
         }
@@ -609,7 +609,7 @@ void exibir_consultas_pela_data(FILE *dados_consultas, FILE *dados_medicos, FILE
 
     while (true) {
         system("cls");
-        printf("Exibição de consultas pela data\n\n");
+        printf("Exibição de consultas pela data:\n\n");
 
         !strlen(data)
             ? printf(MENSAGEM_DATA)
@@ -650,7 +650,7 @@ void exibir_consultas_pela_data(FILE *dados_consultas, FILE *dados_medicos, FILE
         fread(&consulta, sizeof(consulta), 1, dados_consultas);
     }
 
-    if (!existe_consulta) printf("\nNenhuma consulta.");
+    if (!existe_consulta) printf("\n[Erro: #11]: Não existe consulta agendada.");
 
     getch();
 }
@@ -676,7 +676,7 @@ void exibir_consultas_realizadas_pelo_paciente(FILE *dados_consultas, FILE *dado
             continue;
         }
         if (!verificar_existencia_do_paciente(dados_pacientes, nome)) {
-            printf("\nNão existe um paciente com o nome informado.");
+            printf("\n[Erro: #8]: Não foi encontrado um paciente com esse nome.");
             pausar();
             strcpy(nome, "");
             continue;
@@ -707,7 +707,7 @@ void exibir_consultas_realizadas_pelo_paciente(FILE *dados_consultas, FILE *dado
         fread(&consulta, sizeof(consulta), 1, dados_consultas);
     }
 
-    if (!existe_consulta) printf("\nNenhuma consulta.");
+    if (!existe_consulta) printf("\n[Erro: #11]: Não existe consulta agendada.");
 
     getch();
 }
@@ -733,7 +733,7 @@ void exibir_consultas_do_medico(FILE *dados_consultas, FILE *dados_medicos, FILE
             continue;
         }
         if (!verificar_existencia_do_medico(dados_medicos, nome)) {
-            printf("\nNão existe um médico com o nome informado.");
+            printf("\n[Erro: #6]: Não foi encontrado um médico com esse nome.");
             pausar();
             strcpy(nome, "");
             continue;
@@ -764,7 +764,7 @@ void exibir_consultas_do_medico(FILE *dados_consultas, FILE *dados_medicos, FILE
         fread(&consulta, sizeof(consulta), 1, dados_consultas);
     }
 
-    if (!existe_consulta) printf("\nNenhuma consulta.");
+    if (!existe_consulta) printf("\n[Erro: #11]: Não existe consulta agendada.");
 }
 
 void exibir_laudos_medicos(FILE *dados_consultas, FILE *dados_medicos, FILE *dados_pacientes) {
@@ -791,7 +791,7 @@ void exibir_laudos_medicos(FILE *dados_consultas, FILE *dados_medicos, FILE *dad
                 exibir_laudos_pelo_paciente(dados_consultas, dados_medicos, dados_pacientes);
                 break;
             default:
-                printf("\n\nOpção inválida.");
+                printf("\n\n[Erro: #1]: Opção selecionada não encontrada.");
                 pausar();
                 break;
         }
@@ -838,7 +838,7 @@ void adicionar_laudo_medico(FILE *dados_consultas, FILE *dados_medicos, FILE *da
             fread(&consulta, sizeof(consulta), 1, dados_consultas);
         }
 
-        if (!existe_consulta_realizada) printf("Não existe consulta realizada sem laudo.");
+        if (!existe_consulta_realizada) printf("[Erro: #12]: Não existe consulta realizada sem laudo.");
         else {
             printf("\nAdicionar laudo da consulta com o código: ");
             gets(codigo);
@@ -877,7 +877,7 @@ void adicionar_laudo_medico(FILE *dados_consultas, FILE *dados_medicos, FILE *da
                 fread(&consulta, sizeof(consulta), 1, dados_consultas);
             }
 
-            if (!existe_consulta_com_o_codigo) printf("\nNão existe uma consulta com esse código.");
+            if (!existe_consulta_com_o_codigo) printf("\n[Erro: #10]: Não existe uma consulta com esse código.");
         }
 
         break;
@@ -907,7 +907,7 @@ void exibir_laudos_pelo_medico(FILE *dados_consultas, FILE *dados_medicos, FILE 
             continue;
         }
         if (!verificar_existencia_do_medico(dados_medicos, nome)) {
-            printf("\nNão existe um médico com o nome informado.");
+            printf("\n[Erro: #6]: Não foi encontrado um médico com esse nome.");
             pausar();
             strcpy(nome, "");
             continue;
@@ -965,7 +965,7 @@ void exibir_laudos_pelo_paciente(FILE *dados_consultas, FILE *dados_medicos, FIL
             continue;
         }
         if (!verificar_existencia_do_paciente(dados_pacientes, nome)) {
-            printf("\nNão existe um paciente com o nome informado.");
+            printf("\n[Erro: #8]: Não foi encontrado um paciente com esse nome.");
             pausar();
             strcpy(nome, "");
             continue;
@@ -997,7 +997,7 @@ void exibir_laudos_pelo_paciente(FILE *dados_consultas, FILE *dados_medicos, FIL
         fread(&consulta, sizeof(consulta), 1, dados_consultas);
     }
 
-    if (!existe_consulta) printf("\nNenhuma consulta.");
+    if (!existe_consulta) printf("\n[Erro: #11]: Não existe consulta agendada.");
 
     getch();
 }
@@ -1152,7 +1152,7 @@ bool verificar_existencia_de_consulta_proxima(FILE *dados_consultas, Momento mom
             diferenca_em_minutos = difftime(mktime(&momento), mktime(&consulta.momento)) / 60;
 
             if (abs(momento.tm_year - consulta.momento.tm_year) <= 1 && abs(diferenca_em_minutos) < 30) {
-                if (diferenca_em_minutos == 0) printf("\nJá existe uma consulta agendada no momento informado.");
+                if (diferenca_em_minutos == 0) printf("\n[Erro: #13]: Já existe uma consulta agendada no momento informado.");
                 else {
                     printf("\nJá existe uma consulta agendada %s do momento informado em %d ", ANTES_DEPOIS[diferenca_em_minutos < 0], abs(diferenca_em_minutos));
                     (abs(diferenca_em_minutos) == 1) ? printf("minuto.") : printf("minutos.");
